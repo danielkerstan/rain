@@ -1,0 +1,76 @@
+---
+title: "Rain"
+author: "Daniel Kerstan"
+date: "3/5/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, comment = '')
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(kableExtra)
+
+```
+
+```{r}
+current_date <- Sys.Date()
+
+start_date <- paste0(year(current_date), "-01-01")
+
+current_date = as.character(current_date)
+start_date <- as.character(start_date)
+
+point_conception <- "https://rain.cosbpw.net/export/file/?site_id=136&site=4a4c17d2-ea36-46d0-8f13-04c7acbb60fa&device_id=3&device=ec7f5cf9-c831-4a63-8255-40a94b6f90af"
+rancho_san_julian <- "https://rain.cosbpw.net/export/file/?site_id=96&site=18fb28b2-835d-486d-8fe6-78d4e0371665&device_id=2&device=567e110f-a09e-4ed3-9738-b46bfadef577"
+
+# Select site ##########
+site <- point_conception
+########################
+
+df <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date, "%2020:49:03&data_end=", current_date, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
+  clean_names()
+
+df <- df %>%
+  mutate(day = day(reading)) %>% 
+  mutate(month = month(reading)) %>% 
+  mutate(year = year(reading)) %>% 
+  unite(date,c(year, month, day), sep = "-") %>% 
+  mutate(date = ymd(date)) %>% 
+  group_by(date) %>% 
+  summarize(value = sum(value)) %>% 
+  arrange(desc(date))
+
+df <- df %>% rename("rain" = value)
+if (site == point_conception) {
+  site_name = "POINT CONCEPTION"
+} else if (site == rancho_san_julian) {
+  site_name = "RANCHO SAN JULIAN"
+}
+```
+
+## Site: `r site_name`
+
+```{r}
+table <- (head(df, n = 7))
+
+kable(table, align = "l") %>% 
+  kable_paper()
+```
+
+
+```{r}
+for (i in 1:length(df$rain)) {
+  if (df$rain[i] > 0) {
+    print(paste(df$rain[i], "IN OF RAIN ON", df$date[i]))
+  }
+}
+
+if (sum(df$rain) == 0) {
+  print("THERE HAS BEEN NO RAIN THIS YEAR")
+}
+
+print(paste0("YEAR TOTAL RAIN (since ", start_date, "): ", sum(df$rain), " in"))
+```
+
