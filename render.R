@@ -1,1 +1,1 @@
-rmarkdown::render("index.Rmd")
+rmarkdown::render("/Users/danielkerstan/Desktop/rain/index.Rmd")
