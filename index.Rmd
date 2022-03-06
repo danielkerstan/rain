@@ -16,9 +16,8 @@ library(rmarkdown)
 
 ```{r}
 system_time <- Sys.time()
-print(system_time)
 ```
-
+updated: `r system_time`
 
 ```{r}
 current_date <- Sys.Date()
@@ -56,7 +55,7 @@ if (site == point_conception) {
 }
 ```
 
-## Site: `r site_name`
+### Site: `r site_name`
 
 ```{r}
 table <- (head(df, n = 7))
