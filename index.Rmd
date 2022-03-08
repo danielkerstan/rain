@@ -21,6 +21,7 @@ updated: `r system_time`
 
 ```{r}
 current_date <- Sys.Date()
+current_date_date <- as.Date(current_date)
 
 start_date <- paste0(year(current_date), "-01-01")
 
@@ -58,9 +59,20 @@ if (site == point_conception) {
 ## Site: `r site_name`
 ### Rain in the past 7 days
 
-```{r}
-table <- (head(df, n = 7))
+```{r, fig.asp=0.3}
+table <- df %>% filter(date >= current_date_date - 6)
 
+ggplot(table, aes(x = date, y = rain)) +
+  geom_col(fill = "blue") +
+  geom_text(aes(label = rain), vjust = -0.5) +
+  scale_x_date(date_labels = "%b%e", date_breaks = "1 day") +
+  labs(y = "Rain (in)") +
+  theme(axis.title.x = element_blank()) + 
+  theme_minimal()
+```
+
+
+```{r}
 kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>% 
   kable_paper()
 ```
