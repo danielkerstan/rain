@@ -83,7 +83,7 @@ kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>%
 
 df_all_events <- df %>% filter(rain > 0)
 kable(df_all_events, align = "l", col.names = c("Date of Event", "Rain (in)")) %>% 
-  kable_paper(lightable_options = "hover")
+  kable_paper()
 ```
 
 ```{r}
