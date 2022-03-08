@@ -56,6 +56,7 @@ if (site == point_conception) {
 ```
 
 ### Site: `r site_name`
+### Rain in the past 7 days
 
 ```{r}
 table <- (head(df, n = 7))
@@ -64,7 +65,7 @@ kable(table, align = "l") %>%
   kable_paper()
 ```
 
-
+### All rain events since the start of this year
 ```{r}
 for (i in 1:length(df$rain)) {
   if (df$rain[i] > 0) {
@@ -75,7 +76,10 @@ for (i in 1:length(df$rain)) {
 if (sum(df$rain) == 0) {
   print("THERE HAS BEEN NO RAIN THIS YEAR")
 }
+```
 
+### Total rain this year
+```{r}
 print(paste0("YEAR TOTAL RAIN (since ", start_date, "): ", sum(df$rain), " in"))
 ```
 
