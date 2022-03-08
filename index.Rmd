@@ -76,6 +76,13 @@ kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>%
   kable_paper(lightable_options = "striped")
 ```
 
+```{r}
+if (length(table$date != 7)) {
+  cat(paste("values not recorded for", (7-length(table$date)), "of the 7 days"))
+}
+```
+
+
 ---
 
 ## **Total rain this year (since `r start_date`):**  
