@@ -1,5 +1,5 @@
 ---
-title: "Rain"
+title:  "Rain"
 author: "Daniel Kerstan"
 output: html_document
 ---
@@ -55,32 +55,39 @@ if (site == point_conception) {
 }
 ```
 
-### Site: `r site_name`
+## Site: `r site_name`
 ### Rain in the past 7 days
 
 ```{r}
 table <- (head(df, n = 7))
 
-kable(table, align = "l") %>% 
+kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>% 
   kable_paper()
 ```
 
+## **Total rain this year (since `r start_date`): `r sum(df$rain)` in**
+
+--------------------------
+
 ### All rain events since the start of this year
 ```{r}
-for (i in 1:length(df$rain)) {
-  if (df$rain[i] > 0) {
-    print(paste(df$rain[i], "IN OF RAIN ON", df$date[i]))
-  }
-}
+# for (i in 1:length(df$rain)) {
+#   if (df$rain[i] > 0) {
+#     print(paste(df$rain[i], "IN OF RAIN ON", df$date[i]))
+#   }
+# }
+# 
+# if (sum(df$rain) == 0) {
+#   print("THERE HAS BEEN NO RAIN THIS YEAR")
+# }
 
-if (sum(df$rain) == 0) {
-  print("THERE HAS BEEN NO RAIN THIS YEAR")
-}
+df_all_events <- df %>% filter(rain > 0)
+kable(df_all_events, align = "l", col.names = c("Date of Event", "Rain (in)")) %>% 
+  kable_paper(lightable_options = "hover")
 ```
 
-### Total rain this year
 ```{r}
-print(paste0("YEAR TOTAL RAIN (since ", start_date, "): ", sum(df$rain), " in"))
+#print(paste0("YEAR TOTAL RAIN (since ", start_date, "): ", sum(df$rain), " in"))
 ```
 
 
