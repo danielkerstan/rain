@@ -77,8 +77,20 @@ kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>%
 ```
 
 ```{r}
+seven_days_df <- data.frame(date = c(current_date_date,
+                                     current_date_date-1,
+                                     current_date_date-2,
+                                     current_date_date-3,
+                                     current_date_date-4,
+                                     current_date_date-5,
+                                     current_date_date-6
+                                     ))
+notrecorded_df <- seven_days_df %>% 
+  anti_join(table, by = "date")
+
+
 if (length(table$date != 7)) {
-  cat(paste("values not recorded for", (7-length(table$date)), "of the 7 days"))
+  cat(paste("values not yet recorded for", notrecorded_df$date))
 }
 ```
 
