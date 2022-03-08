@@ -78,7 +78,7 @@ kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>%
 
 ---
 
-### **Total rain this year (since `r start_date`):**  
+## **Total rain this year (since `r start_date`):**  
 # `r sum(df$rain)` in
 
 ---
