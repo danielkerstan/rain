@@ -109,6 +109,22 @@ cat(paste("latest reading:", head(data$reading, 1)))
 ---
 
 ### All rain events since the start of this year
+
+
+```{r, fig.asp=0.2}
+df2 <- df %>% mutate(total_rain = 0) %>% arrange(date)
+
+for (i in 2:length(df2$rain)) {
+  df2$total_rain[i] = df2$rain[i] + df2$total_rain[i-1]
+}
+
+
+ggplot(df2, aes(x = date, y = total_rain)) +
+  geom_area(fill = "lightblue", alpha = 0.5) +
+  labs(y = "Total Rain (in)") +
+  theme(axis.title.x = element_blank(), panel.grid.minor = element_blank(), panel.grid.major = element_line(color = "gray", size = .1), panel.background = element_blank(), axis.ticks = element_blank())
+```
+
 ```{r}
 # for (i in 1:length(df$rain)) {
 #   if (df$rain[i] > 0) {
