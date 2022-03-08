@@ -35,10 +35,11 @@ rancho_san_julian <- "https://rain.cosbpw.net/export/file/?site_id=96&site=18fb2
 site <- point_conception
 ########################
 
-df <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date, "%2020:49:03&data_end=", current_date, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
+data <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date, "%2020:49:03&data_end=", current_date, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
   clean_names()
 
-df <- df %>%
+
+df <- data %>%
   mutate(day = day(reading)) %>% 
   mutate(month = month(reading)) %>% 
   mutate(year = year(reading)) %>% 
@@ -55,6 +56,7 @@ if (site == point_conception) {
   site_name = "RANCHO SAN JULIAN"
 }
 ```
+Data from: County of Santa Barbara Public Works  
 
 ## Site: `r site_name`
 ### Rain in the past 7 days
@@ -89,9 +91,13 @@ notrecorded_df <- seven_days_df %>%
   anti_join(table, by = "date")
 
 
-if (length(table$date != 7)) {
-  cat(paste("values not yet recorded for", notrecorded_df$date))
-}
+# if (length(table$date != 7)) {
+#   message(paste("values not yet recorded for", notrecorded_df$date))
+#   message(paste("latest reading:", head(data$reading, 1)))
+# } else {message(paste("latest reading:", head(data$reading, 1)))}
+
+
+cat(paste("latest reading:", head(data$reading, 1)))
 ```
 
 
