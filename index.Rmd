@@ -59,27 +59,26 @@ if (site == point_conception) {
 ## Site: `r site_name`
 ### Rain in the past 7 days
 
-```{r, fig.asp=0.3}
+```{r, fig.asp=0.2}
 table <- df %>% filter(date >= current_date_date - 6)
 
 ggplot(table, aes(x = date, y = rain)) +
-  geom_col(fill = "blue") +
-  geom_text(aes(label = rain), vjust = -0.5) +
+  geom_col(fill = "lightblue") +
+  geom_text(aes(label = rain), vjust = .5, size = 3) +
   scale_x_date(date_labels = "%b%e", date_breaks = "1 day") +
   labs(y = "Rain (in)") +
-  theme(axis.title.x = element_blank()) + 
-  theme_minimal()
+  theme(axis.title.x = element_blank(), panel.grid.minor = element_blank(), panel.grid.major = element_line(color = "gray", size = .1), panel.background = element_blank(), axis.ticks = element_blank())
 ```
 
 
 ```{r}
 kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>% 
-  kable_paper()
+  kable_paper(lightable_options = "striped")
 ```
 
 ## **Total rain this year (since `r start_date`): `r sum(df$rain)` in**
 
---------------------------
+---
 
 ### All rain events since the start of this year
 ```{r}
@@ -95,7 +94,7 @@ kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>%
 
 df_all_events <- df %>% filter(rain > 0)
 kable(df_all_events, align = "l", col.names = c("Date of Event", "Rain (in)")) %>% 
-  kable_paper()
+  kable_classic_2()
 ```
 
 ```{r}
