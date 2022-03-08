@@ -76,7 +76,8 @@ kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>%
   kable_paper(lightable_options = "striped")
 ```
 
-## **Total rain this year (since `r start_date`): `r sum(df$rain)` in**
+## **Total rain this year (since `r start_date`):**  
+# `r sum(df$rain)` in
 
 ---
 
