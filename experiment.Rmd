@@ -1,0 +1,157 @@
+---
+title:  "Rain"
+author: "Daniel Kerstan"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, comment = NA)
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(kableExtra)
+library(rmarkdown)
+
+```
+
+```{r}
+system_time <- Sys.time()
+```
+updated: `r system_time`
+
+```{r}
+current_date <- Sys.Date()
+current_date_date <- as.Date(current_date)
+
+start_date <- paste0(year(current_date), "-01-01")
+
+start_date_before <- paste0(year(current_date) -1, "01-01")
+end_date_before <- paste0(year(current_date) -1, "12-31")
+
+start_date_before <- as.character(start_date_before)
+end_date_before <- as.character(end_date_before)
+
+current_date = as.character(current_date)
+start_date <- as.character(start_date)
+
+point_conception <- "https://rain.cosbpw.net/export/file/?site_id=136&site=4a4c17d2-ea36-46d0-8f13-04c7acbb60fa&device_id=3&device=ec7f5cf9-c831-4a63-8255-40a94b6f90af"
+rancho_san_julian <- "https://rain.cosbpw.net/export/file/?site_id=96&site=18fb28b2-835d-486d-8fe6-78d4e0371665&device_id=2&device=567e110f-a09e-4ed3-9738-b46bfadef577"
+
+# Select site ##########
+site <- point_conception
+########################
+
+data_before <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date_before, "%2020:49:03&data_end=", end_date_before, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
+  clean_names()
+
+data <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date, "%2020:49:03&data_end=", current_date, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
+  clean_names()
+
+
+df <- data %>%
+  mutate(day = day(reading)) %>% 
+  mutate(month = month(reading)) %>% 
+  mutate(year = year(reading)) %>% 
+  unite(date,c(year, month, day), sep = "-") %>% 
+  mutate(date = ymd(date)) %>% 
+  group_by(date) %>% 
+  summarize(value = sum(value)) %>% 
+  arrange(desc(date))
+
+df <- df %>% rename("rain" = value)
+if (site == point_conception) {
+  site_name = "POINT CONCEPTION"
+} else if (site == rancho_san_julian) {
+  site_name = "RANCHO SAN JULIAN"
+}
+```
+Data from: County of Santa Barbara Public Works  
+
+## Site: `r site_name`
+### Rain in the past 7 days
+
+```{r, fig.asp=0.2}
+table <- df %>% filter(date >= current_date_date - 6)
+
+ggplot(table, aes(x = date, y = rain)) +
+  geom_col(fill = "lightblue") +
+  geom_text(aes(label = rain), vjust = .5, size = 3) +
+  scale_x_date(date_labels = "%b%e", date_breaks = "1 day") +
+  labs(y = "Rain (in)") +
+  theme(axis.title.x = element_blank(), panel.grid.minor = element_blank(), panel.grid.major = element_line(color = "gray", size = .1), panel.background = element_blank(), axis.ticks = element_blank())
+```
+
+
+```{r}
+kable(table, align = "l", col.names = c("Date", "Rain (in)")) %>% 
+  kable_paper(lightable_options = "striped")
+```
+
+```{r}
+seven_days_df <- data.frame(date = c(current_date_date,
+                                     current_date_date-1,
+                                     current_date_date-2,
+                                     current_date_date-3,
+                                     current_date_date-4,
+                                     current_date_date-5,
+                                     current_date_date-6
+                                     ))
+notrecorded_df <- seven_days_df %>% 
+  anti_join(table, by = "date")
+
+
+# if (length(table$date != 7)) {
+#   message(paste("values not yet recorded for", notrecorded_df$date))
+#   message(paste("latest reading:", head(data$reading, 1)))
+# } else {message(paste("latest reading:", head(data$reading, 1)))}
+
+
+cat(paste("latest reading:", head(data$reading, 1)))
+```
+
+
+---
+
+## **Total rain this year (since `r start_date`):**  
+# `r sum(df$rain)` in
+
+---
+
+### All rain events since the start of this year
+
+
+```{r, fig.asp=0.2}
+df2 <- df %>% mutate(total_rain = 0) %>% arrange(date)
+
+for (i in 2:length(df2$rain)) {
+  df2$total_rain[i] = df2$rain[i] + df2$total_rain[i-1]
+}
+
+
+ggplot(df2, aes(x = date, y = total_rain)) +
+  geom_area(fill = "lightblue", alpha = 0.5) +
+  labs(y = "Total Rain (in)") +
+  theme(axis.title.x = element_blank(), panel.grid.minor = element_blank(), panel.grid.major = element_line(color = "gray", size = .1), panel.background = element_blank(), axis.ticks = element_blank())
+```
+
+```{r}
+# for (i in 1:length(df$rain)) {
+#   if (df$rain[i] > 0) {
+#     print(paste(df$rain[i], "IN OF RAIN ON", df$date[i]))
+#   }
+# }
+# 
+# if (sum(df$rain) == 0) {
+#   print("THERE HAS BEEN NO RAIN THIS YEAR")
+# }
+
+df_all_events <- df %>% filter(rain > 0)
+kable(df_all_events, align = "l", col.names = c("Date of Event", "Rain (in)")) %>% 
+  kable_classic()
+```
+
+```{r}
+#print(paste0("YEAR TOTAL RAIN (since ", start_date, "): ", sum(df$rain), " in"))
+```
+
+
