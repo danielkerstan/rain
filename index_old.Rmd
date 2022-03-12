@@ -25,12 +25,6 @@ current_date_date <- as.Date(current_date)
 
 start_date <- paste0(year(current_date), "-01-01")
 
-start_date_before <- paste0(year(current_date) -1, "01-01")
-end_date_before <- paste0(year(current_date) -1, "12-31")
-
-start_date_before <- as.character(start_date_before)
-end_date_before <- as.character(end_date_before)
-
 current_date = as.character(current_date)
 start_date <- as.character(start_date)
 
@@ -40,9 +34,6 @@ rancho_san_julian <- "https://rain.cosbpw.net/export/file/?site_id=96&site=18fb2
 # Select site ##########
 site <- point_conception
 ########################
-
-data_before <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date_before, "%2020:49:03&data_end=", end_date_before, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
-  clean_names()
 
 data <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date, "%2020:49:03&data_end=", current_date, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
   clean_names()

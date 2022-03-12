@@ -25,6 +25,12 @@ current_date_date <- as.Date(current_date)
 
 start_date <- paste0(year(current_date), "-01-01")
 
+start_date_before <- paste0(year(current_date) -1, "-01-01")
+end_date_before <- paste0(year(current_date) -1, "-12-31")
+
+start_date_before <- as.character(start_date_before)
+end_date_before <- as.character(end_date_before)
+
 current_date = as.character(current_date)
 start_date <- as.character(start_date)
 
@@ -34,6 +40,11 @@ rancho_san_julian <- "https://rain.cosbpw.net/export/file/?site_id=96&site=18fb2
 # Select site ##########
 site <- point_conception
 ########################
+
+"https://rain.cosbpw.net/export/file/?site_id=136&site=4a4c17d2-ea36-46d0-8f13-04c7acbb60fa&device_id=3&device=ec7f5cf9-c831-4a63-8255-40a94b6f90af&mode=&hours=&data_start=2021-01-01%2000:00:00&data_end=2021-12-31%2000:00:00&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma"
+
+data_before <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date_before, "%2000:00:00&data_end=", end_date_before, "%2000:00:00&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
+  clean_names()
 
 data <- read_csv(paste0(site, "&mode=&hours=&data_start=", start_date, "%2020:49:03&data_end=", current_date, "%2020:49:03&tz=US%2FPacific&format_datetime=%25Y-%25m-%25d+%25H%3A%25i%3A%25S&mime=txt&delimiter=comma")) %>% 
   clean_names()
@@ -47,9 +58,21 @@ df <- data %>%
   mutate(date = ymd(date)) %>% 
   group_by(date) %>% 
   summarize(value = sum(value)) %>% 
-  arrange(desc(date))
+  arrange(desc(date)) %>% 
+  rename("rain" = value)
 
-df <- df %>% rename("rain" = value)
+df_before <- data_before %>% 
+  mutate(day = day(reading)) %>% 
+  mutate(month = month(reading)) %>% 
+  mutate(year = year(reading)) %>% 
+  unite(date,c(year, month, day), sep = "-") %>% 
+  mutate(date = ymd(date)) %>% 
+  group_by(date) %>% 
+  summarize(value = sum(value)) %>% 
+  arrange(desc(date))%>% 
+  rename("rain" = value)
+
+
 if (site == point_conception) {
   site_name = "POINT CONCEPTION"
 } else if (site == rancho_san_julian) {
@@ -112,16 +135,35 @@ cat(paste("latest reading:", head(data$reading, 1)))
 
 
 ```{r, fig.asp=0.2}
-df2 <- df %>% mutate(total_rain = 0) %>% arrange(date)
+df2 <- df %>% mutate(total_rain = 0, year = year(date), month = month(date), day = day(date)) %>% unite(col = monthday, c("month", "day"), sep = "-", remove = FALSE) %>% arrange(date)
 
 for (i in 2:length(df2$rain)) {
   df2$total_rain[i] = df2$rain[i] + df2$total_rain[i-1]
 }
 
+df2_before <- df_before %>% mutate(total_rain = 0, year = year(date), month = month(date), day = day(date)) %>% unite(col = monthday, c("month", "day"), sep = "-", remove = FALSE) %>% arrange(date)
 
-ggplot(df2, aes(x = date, y = total_rain)) +
-  geom_area(fill = "lightblue", alpha = 0.5) +
+for (i in 2:length(df2_before$rain)) {
+  df2_before$total_rain[i] = df2_before$rain[i] + df2_before$total_rain[i-1]
+}
+
+df2_before <- semi_join(df2_before, df2, by = "monthday")
+
+df_total <- rbind(df2_before, df2)
+
+df_total <- df_total %>% arrange(date) %>% group_by(year) %>% summarize(monthday, total_rain) %>% mutate(monthday = as.Date(monthday, "%m-%d")) %>% mutate(year = as.character(year))
+
+df_current <- df_total %>% filter(year == year(current_date_date))
+df_past <- df_total %>% filter(year == year(current_date_date) - 1)
+
+ggplot() +
+  geom_area(data = df_past, aes(x = monthday, y = total_rain, fill = year), alpha = 0.4) +
+  geom_line(data = df_past, aes(x = monthday, y = total_rain, color = year), alpha = 0.5, show.legend = FALSE) +
+  geom_area(data = df_current, aes(x = monthday, y = total_rain, fill = year), alpha = 0.7) +
+  geom_line(data = df_current, aes(x = monthday, y = total_rain, color = year), show.legend = FALSE) +
   labs(y = "Total Rain (in)") +
+  scale_fill_manual(values = c("gray", "lightblue")) +
+  scale_color_manual(values = c("gray", "lightblue3")) + 
   theme(axis.title.x = element_blank(), panel.grid.minor = element_blank(), panel.grid.major = element_line(color = "gray", size = .1), panel.background = element_blank(), axis.ticks = element_blank())
 ```
 
